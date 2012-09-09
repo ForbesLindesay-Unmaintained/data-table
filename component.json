@@ -5,10 +5,11 @@
   "version": "0.0.1",
   "keywords": [],
   "dependencies": {
-    "component/emitter": "*"
+    "component/escape-html": "*"
   },
   "development": {},
   "scripts": [
-    "index.js"
+    "index.js",
+    "lib/template.js"
   ]
 }

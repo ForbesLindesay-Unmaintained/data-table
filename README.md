@@ -138,12 +138,11 @@ For example, if we wanted to display one of the rows at random, we could do this
 ```JavaScript
 
 function randomPlugin(table, templates, source) {
-  table.on('pre-render', function (options, e) {
-    e.async();
+  table.register('pre-render', function (options, done) {
     source.count(function (err, count) {
       if (err) throw err;
       options.page = { start: Math.floor(Math.random() * count), count: 1};
-      e.done();
+      done();
     });
   });
 }
