@@ -1,0 +1,12 @@
+{
+  "name": "data-table",
+  "repo": "ForbesLindesay/data-table",
+  "description": "Functionality for manipulating cells of a table, with appropriate markup, completely dependency free.",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {},
+  "development": {},
+  "scripts": [
+    "index.js"
+  ]
+}
