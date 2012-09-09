@@ -6,7 +6,7 @@ function table(table) {
   if (typeof table !== 'object') throw new Error('To use table, you must pass an element of type "<table>"');
   if (table.tagName !== 'TABLE') throw new Error('To use table, the table must be of type "<table>"');
 
-  var exports = {};}
+  var exports = {};
 
   var templates = getTemplates(table);
   var dataSource;
