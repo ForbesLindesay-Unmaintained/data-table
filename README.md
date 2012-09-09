@@ -12,6 +12,65 @@ A data table consists of:
  - A Row Template
  - Plugins
 
+A typical configuration would look like:
+
+```html
+<table id="users">
+  <thead>
+    <th data-name="username">Username</th>
+    <th data-name="name">Real Name</th>
+  </thead>
+  <tbody>
+    <script type="application/row-template">
+      <tr><td>{{username}}</td><td>{{name}}</td></tr>
+    </script>
+    <script type="application/json-data">
+      [
+        {username: "ForbesLindesay", name: "Forbes Lindesay"},
+        {username: "substack", name: "James Halliday"},
+        {username: "visionmedia", name: "TJ Holowaychuk"}
+      ]
+    </script>
+  </tbody>
+</table>
+```
+
+```JavaScript
+//Load the module
+var dataTable = require('data-table');
+
+//Create a new dataTable from the element
+var table = dataTable(document.getElementById('users'));
+
+//Define the source
+var jsonSource = require('json-source');
+//jsonSource will automatically load the json in script - "application/json-data"
+var source = jsonSource(table);
+source.getID = function (record) {
+  return record.username; //If our id was called id we wouldn't need this
+};
+
+//Use the source
+table.source(source);
+
+//Use some plugins in their default configuration
+table.use(require('sorting'));
+table.use(require('paging'));
+table.use(require('search'));
+```
+
+Row Template
+------------
+
+The row template uses a markdown like syntax to produce the row.
+
+Example:
+
+```html
+<tr><td>{{id}}</td><td>{{date}}</td><td>{{{richText}}}</td></tr>
+```
+
+In that example, id and date would be escaped, while richText would be outputted as-is.  It is recomended that you escape everything unless it's from a trusted source.
 
 Data Source
 -----------
@@ -60,4 +119,3 @@ Retrieves a (sub)set of results.  To support async operation, node.js style call
 ### DataSource#update(id, name, value, callback(err))
 
 If a data source supports writing, it should provide this (optional) method to update the source.
-
