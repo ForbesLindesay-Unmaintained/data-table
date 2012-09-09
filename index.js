@@ -26,13 +26,23 @@ function table(table) {
       plugins[i](exports, templates, dataSource);
     }
     plugins = null; //prevent memory leak
-    update();
+    update(); //todo: provide a callback
   }
 
   exports.update = update;
-  function update() {
+  function update(callback) {
     var options = {};
     //todo: trigger events then update ui, then trigger more events
+    trigger('pre-load', [options], function (err) {
+      if (err) return callback(err);
+      dataSource.getRows(options, function (err, records, hasMore) {
+        if (err) return callback(err);
+        trigger('post-load', [options, records, hasMore], function (err) {
+          if (err) return callback(err);
+
+        });
+      });
+    });
   }
 
   var events = {};
