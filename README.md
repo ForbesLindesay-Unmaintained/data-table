@@ -1,6 +1,8 @@
 data-table
 ==========
 
+**!!!WARNING!!! Draft Spec: Implimentation in progress**
+
 Functionality for manipulating cells of a table, with appropriate markup, completely dependency free.
 
 Creating a Data Table
@@ -8,8 +10,8 @@ Creating a Data Table
 
 A data table consists of:
 
- - A Data Source
  - A Row Template
+ - A Data Source
  - Plugins
 
 A typical configuration would look like:
@@ -42,6 +44,11 @@ var dataTable = require('data-table');
 //Create a new dataTable from the element
 var table = dataTable(document.getElementById('users'));
 
+//Use some plugins in their default configuration
+table.use(require('sorting'));
+table.use(require('paging'));
+table.use(require('search'));
+
 //Define the source
 var jsonSource = require('json-source');
 //jsonSource will automatically load the json in script - "application/json-data"
@@ -52,12 +59,9 @@ source.getID = function (record) {
 
 //Use the source
 table.source(source);
-
-//Use some plugins in their default configuration
-table.use(require('sorting'));
-table.use(require('paging'));
-table.use(require('search'));
 ```
+
+Setting the table source at the end is important, since that ensures that all plugins get to act on the table when it's first rendered.  If you added source before the plugins, all rows would be fetched and rendered, even though we use the paging plugin.  We'd then use the paging plugin and have to remove some of the rows we already rendered.  This could potentially have an enormous performance cost.
 
 Row Template
 ------------
@@ -72,8 +76,8 @@ Example:
 
 In that example, id and date would be escaped, while richText would be outputted as-is.  It is recomended that you escape everything unless it's from a trusted source.
 
-Data Source
------------
+Data Source API
+---------------
 
 You probably want to use one of the pre-made plugins for this, but if you want to impliment your own, here's how:
 
@@ -90,6 +94,10 @@ function getID(record) {
 ```
 
 The id must be a primitive type such as an int or a string.  Each record must have a unique id.
+
+### DataSource#count(callback(err, count))
+
+Call callback with the number of rows in the table.  If the number of rows is un-known, it should return -1.
 
 ### DataSource#getRows(options, callback)
 
@@ -119,3 +127,25 @@ Retrieves a (sub)set of results.  To support async operation, node.js style call
 ### DataSource#update(id, name, value, callback(err))
 
 If a data source supports writing, it should provide this (optional) method to update the source.
+
+Plugin API
+----------
+
+Plugins should simply be functions that take a dataTable, the templates object and the dataSource as arguments.  They can then subscribe to lots of events on the table object.
+
+For example, if we wanted to display one of the rows at random, we could do this:
+
+```JavaScript
+
+function randomPlugin(table, templates, source) {
+  table.on('pre-render', function (options, e) {
+    e.async();
+    source.count(function (err, count) {
+      if (err) throw err;
+      options.page = { start: Math.floor(Math.random() * count), count: 1};
+      e.done();
+    });
+  });
+}
+
+```
