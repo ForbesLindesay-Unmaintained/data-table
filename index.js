@@ -1,5 +1,3 @@
-var template = require('./lib/template');
-
 module.exports = table;
 
 function table(table) {
@@ -9,29 +7,50 @@ function table(table) {
   var exports = {};
 
   var templates = getTemplates(table);
+  var columns = getColumns(table);
+
   var dataSource;
+  var rowRenderer;
 
   var plugins = [];
 
   exports.use = use;
   function use(plugin) {
-    if (dataSource) plugin(exports, templates, dataSource);
+    if (dataSource) plugin(exports, templates, columns, dataSource);
     else plugins.push(plugin);
+  }
+
+  exports.renderer = renderer;
+  function renderer(renderer) {
+    if (!renderer) throw new Error('RowRenderer can\'t be null');
+    if (rowRenderer) throw new Error('You can\'t set the RowRenderer multiple times');
+    rowRenderer = renderer;
+    render();
   }
 
   exports.source = source;
   function source(dSource) {
+    if (!dSource) throw new Error('DataSource can\'t be null');
+    if (dataSource) throw new Error('You can\'t set the DataSource multiple times');
     dataSource = dSource;
+    dataSource.getID = dataSource.getID || function (record) { return record.id; };
+    render();
+  }
+  function render() {
+    if (!dataSource || !rowRenderer) return;
     for (var i = 0; i < plugins.length; i++) {
-      plugins[i](exports, templates, dataSource);
+      plugins[i](exports, templates, columns, dataSource);
     }
     plugins = null; //prevent memory leak
     update(); //todo: provide a callback
   }
 
+  var elementCache = {};
+  var nextElementCache = {};
   exports.update = update;
   function update(callback) {
     var options = {};
+    nextElementCache = {};
     //todo: trigger events then update ui, then trigger more events
     trigger('pre-load', [options], function (err) {
       if (err) return callback(err);
@@ -39,8 +58,30 @@ function table(table) {
         if (err) return callback(err);
         trigger('post-load', [options, records, hasMore], function (err) {
           if (err) return callback(err);
+          var i = records.length;
+          function next(err) {
+            if (err) return callback(err);
+            if (--i < 0) return after();
 
+            add(records, i, next);
+          }
+          next();
+
+          function after() {
+            elementCache = nextElementCache;
+          }
         });
+      });
+    });
+  }
+
+  function add(records, i, callback) {
+    var record = records[i];
+    var id = source.getID(record);
+    if (nextElementCache[id]) return callback(new Error('The same id can\'t appear twice in the table'));
+    trigger('pre-render', [record, id, records, i], function (err) {
+      rowRenderer(record, id, function (err, result) {
+        if (err) return callback(err);
       });
     });
   }
@@ -79,7 +120,6 @@ function getTemplates(table) {
   return result;
 }
 
-//todo: pass column info to plugins
 function getColumns(table) {
   var headers = table
     .getElementsByTagName('thead')[0]

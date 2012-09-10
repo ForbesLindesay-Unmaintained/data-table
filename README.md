@@ -57,24 +57,18 @@ source.getID = function (record) {
   return record.username; //If our id was called id we wouldn't need this
 };
 
+//Use template renderer
+table.renderer(require('template-row'));
 //Use the source
 table.source(source);
 ```
 
 Setting the table source at the end is important, since that ensures that all plugins get to act on the table when it's first rendered.  If you added source before the plugins, all rows would be fetched and rendered, even though we use the paging plugin.  We'd then use the paging plugin and have to remove some of the rows we already rendered.  This could potentially have an enormous performance cost.
 
-Row Template
-------------
+Row Renderer API
+----------------
 
-The row template uses a markdown like syntax to produce the row.
 
-Example:
-
-```html
-<tr><td>{{id}}</td><td>{{date}}</td><td>{{{richText}}}</td></tr>
-```
-
-In that example, id and date would be escaped, while richText would be outputted as-is.  It is recomended that you escape everything unless it's from a trusted source.
 
 Data Source API
 ---------------
@@ -137,7 +131,7 @@ For example, if we wanted to display one of the rows at random, we could do this
 
 ```JavaScript
 
-function randomPlugin(table, templates, source) {
+function randomPlugin(table, templates, columns, source) {
   table.register('pre-render', function (options, done) {
     source.count(function (err, count) {
       if (err) throw err;
