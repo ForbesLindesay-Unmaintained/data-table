@@ -6,8 +6,8 @@ function table(table) {
 
   var exports = {};
 
-  var templates = getTemplates(table);
-  var columns = getColumns(table);
+  var templates = exports.templates = getTemplates(table);
+  var columns = exports.columns = getColumns(table);
 
   var dataSource;
   var rowRenderer;
@@ -36,6 +36,7 @@ function table(table) {
     dataSource.getID = dataSource.getID || function (record) { return record.id; };
     render();
   }
+
   function render() {
     if (!dataSource || !rowRenderer) return;
     for (var i = 0; i < plugins.length; i++) {
