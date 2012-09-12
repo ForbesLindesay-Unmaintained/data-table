@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="mocha.css" />
+    <link href="../build/build.css" rel="stylesheet"/>
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <table id="users" style="display: none;">
+      <thead>
+        <th data-name="username">Username</th>
+        <th data-name="name">Real Name</th>
+      </thead>
+      <tbody>
+        <script type="application/row-template">
+          <tr><td>{{username}}</td><td>{{{name}}}</td></tr>
+        </script>
+        <script type="application/json-data">
+          [
+            {"username": "ForbesLindesay", "name": "Forbes Lindesay"},
+            {"username": "substack", "name": "James Halliday"},
+            {"username": "visionmedia", "name": "TJ Holowaychuk"}
+          ]
+        </script>
+      </tbody>
+    </table>
+    <script src="expect.js"></script>
+    <script src="mocha.js"></script>
+    <script>
+      mocha.setup('bdd');
+    </script>
+    <script src="../build/build.js"></script>
+    <script>
+      (function () {
+        describe('ForbesLindesay/data-table', function () {
+          describe('rendering a typical data-table', function () {
+            it('renders several rows', function (done) {
+              var dTable = require('data-table');
+              var drenderer = require('ForbesLindesay-template-render');
+              var dsource = require('ForbesLindesay-json-source');
+
+              var table = dTable(document.getElementById('users'));
+
+              var source = dsource(table, false);
+              source.getID = getID;
+              function getID(record) {
+                return record.username;
+              }
+              table.source(source);
+
+              var render = drenderer(table);
+              table.renderer(render);
+              setTimeout(function () {
+                var rows = document.getElementById('users').getElementsByTagName('tbody')[0]
+                  .getElementsByTagName('tr');
+                expect(rows).to.be.ok();
+                expect(rows.length).to.be(3);
+                expect(rows[0].innerHTML)
+                  .to.be('<td>ForbesLindesay</td><td>Forbes Lindesay</td>');
+                expect(rows[1].innerHTML)
+                  .to.be('<td>substack</td><td>James Halliday</td>');
+                expect(rows[2].innerHTML)
+                  .to.be('<td>visionmedia</td><td>TJ Holowaychuk</td>');
+                done();
+              }, 10);
+            });
+          });
+        });
+        describe('ForbesLindesay/template-render', function () {
+          var renderer = require('ForbesLindesay-template-render');
+          describe('rendering a template that was set in JavaScript', function () {
+            it('renders', function (done) {
+              var jsrenderer = renderer();
+              jsrenderer.setTemplate('  \n<tr><td>{{foo}}</td><td>{{{bar}}}</td></tr>\n  ');
+              jsrenderer({foo: '<br />', bar: '<br />'}, null, null, null, function (err, res) {
+                if (err) throw err;
+                expect(res).to.be.ok();
+                expect(res.outerHTML).to.equal('<tr><td>&lt;br /&gt;</td><td><br></td></tr>');
+                done();
+              });
+            });
+          });
+          describe('rendering a template set in the html', function () {
+            it('renders', function (done) {
+              var htmlrenderer = renderer({templates: {rowTemplate: '\n  <tr><td>{{foo}}</td><td>{{{bar}}}</td></tr>\n  '}});
+              htmlrenderer({foo: '<br />', bar: '<br />'}, null, null, null, function (err, res) {
+                if (err) throw err;
+                expect(res).to.be.ok();
+                expect(res.outerHTML).to.equal('<tr><td>&lt;br /&gt;</td><td><br></td></tr>');
+                done();
+              });
+            });
+          });
+        });
+        describe('ForbesLindesay/json-source', function () {
+          var Source = require('ForbesLindesay-json-source');
+          describe('set data in JavaScript', function () {
+            var source = Source();
+            source.setData([
+              {username: "substack", name: "James Halliday"},
+              {username: "ForbesLindesay", name: "Forbes Lindesay"},
+              {username: "visionmedia", name: "TJ Holowaychuk"}
+            ]);
+            shared(source);
+          });
+          describe('set data in HTML', function () {
+            var source = Source({templates: {jsonData: '\
+              [\
+              {"username": "substack", "name": "James Halliday"},\
+              {"username": "ForbesLindesay", "name": "Forbes Lindesay"},\
+              {"username": "visionmedia", "name": "TJ Holowaychuk"}\
+            ]\
+            '}});
+            shared(source);
+          });
+          function shared(source) {
+            describe('Setting getID', function () {
+              it('lets you over-ride the default', function () {
+                expect(source.getID({id: 5})).to.equal(5);
+                source.getID = function (record) {return record.username};
+                expect(source.getID({username: 'ForbesLindesay'})).to.equal('ForbesLindesay');
+              });
+            });
+            describe('count', function () {
+              it('returns the number of records (in a callback)', function (done) {
+                source.count(function (err, count) {
+                  if (err) throw err;
+                  expect(count).to.equal(3);
+                  done();
+                });
+              });
+            });
+            describe('getRows', function () {
+              describe('with empty options', function () {
+                it('returns all items in the original order', function (done) {
+                  source.getRows({}, function (err, records, hasMore) {
+                    if (err) throw err;
+                    expect(hasMore).to.be(false);
+                    expect(records).to.be.an('array');
+                    expect(records.length).to.be(3);
+                    expect(records[0].username).to.be('substack');
+                    expect(records[1].username).to.be('ForbesLindesay');
+                    expect(records[2].username).to.be('visionmedia');
+                    done();
+                  });
+                });
+              });
+              describe('with a filter', function () {
+                it('returns items matching the filter', function (done){
+                  source.getRows({filter: 'ForbesLindesay'}, function (err, records, hasMore) {
+                    if (err) throw err;
+                    expect(hasMore).to.be(false);
+                    expect(records).to.be.an('array');
+                    expect(records.length).to.be(1);
+                    expect(records[0].username).to.be('ForbesLindesay');
+                    done();
+                  });
+                });
+              });
+              describe('with a sort', function () {
+                it('returns items in the correct order', function (done){
+                  source.getRows({sort: {field: 'username', order: 'ascending'}}, function (err, records, hasMore) {
+                    if (err) throw err;
+                    expect(hasMore).to.be(false);
+                    expect(records).to.be.an('array');
+                    expect(records.length).to.be(3);
+                    expect(records[0].username).to.be('ForbesLindesay');
+                    expect(records[1].username).to.be('substack');
+                    expect(records[2].username).to.be('visionmedia');
+                    done();
+                  });
+                });
+              });
+              describe('with a page', function () {
+                it('returns only the items that fit in that page', function (done) {
+                  source.getRows({page: {startIndex: 1, count: 1}}, function (err, records, hasMore) {
+                    if (err) throw err;
+                    expect(hasMore).to.be(true);
+                    expect(records).to.be.an('array');
+                    expect(records.length).to.be(1);
+                    expect(records[0].username).to.be('ForbesLindesay');
+                    done();
+                  });
+                });
+              });
+              describe('with a sort and a page', function () {
+                it('returns the correct item(s)', function (done){
+                  source.getRows({sort: {field: 'username', order: 'ascending'}, page: {startIndex: 1, count: 1}}, function (err, records, hasMore) {
+                    if (err) throw err;
+                    expect(hasMore).to.be(true);
+                    expect(records).to.be.an('array');
+                    expect(records.length).to.be(1);
+                    expect(records[0].username).to.be('substack');
+                    done();
+                  });
+                });
+              });
+            });
+          }
+        });
+      }());
+    </script>
+    <script>
+      mocha.globals(['require']).run();
+    </script>
+  </body>
+</html>

@@ -59,10 +59,10 @@ function table(table) {
         if (err) return callback(err);
         trigger('post-load', [options, records, hasMore], function (err) {
           if (err) return callback(err);
-          var i = records.length;
+          var i = -1;
           function next(err) {
             if (err) return callback(err);
-            if (--i < 0) return after();
+            if ((++i) + 1 > records.length) return after();
 
             add(records, i, next);
           }
@@ -78,11 +78,17 @@ function table(table) {
 
   function add(records, i, callback) {
     var record = records[i];
-    var id = source.getID(record);
+    var id = dataSource.getID(record);
     if (nextElementCache[id]) return callback(new Error('The same id can\'t appear twice in the table'));
     trigger('pre-render', [record, id, records, i], function (err) {
-      rowRenderer(record, id, function (err, result) {
+      if (err) return callback(err);
+      rowRenderer(record, records, i, id, function (err, result) {
         if (err) return callback(err);
+        trigger('post-render', [record, id, records, i, result], function (err) {
+          if (err) return callback(err);
+          addRow(table, result);
+          callback();
+        })
       });
     });
   }
@@ -90,6 +96,7 @@ function table(table) {
   var events = {};
   function trigger(name, args, callback) {
     var handlers = events[name];
+    if (!handlers) return callback();
     var i = 0;
     function next(err) {
       if (err) return callback(err);
@@ -113,7 +120,7 @@ function getTemplates(table) {
     .getElementsByTagName('script');
 
   for (var i = 0; i < scripts.length; i++) {
-    result[scripts[i].getAttribute('type').replace('application/', '')] = scripts[i].innerHTML;
+    result[scripts[i].getAttribute('type').replace('application/', '').replace(/\-(\w)/g, function (_, char) { return char.toUpperCase(); })] = scripts[i].innerHTML;
   }
 
   table.getElementsByTagName('tbody')[0].innerHTML = '';
@@ -147,4 +154,8 @@ function dataAttribute(element){
       element.setAttribute(name, value);
     }
   };
+}
+
+function addRow(table, element) {
+  table.getElementsByTagName('tbody')[0].appendChild(element);
 }

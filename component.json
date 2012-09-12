@@ -4,12 +4,12 @@
   "description": "Functionality for manipulating cells of a table, with appropriate markup, completely dependency free.",
   "version": "0.0.1",
   "keywords": [],
-  "dependencies": {
-    "component/escape-html": "*"
+  "dependencies": {},
+  "development": {
+    "ForbesLindesay/template-render": "*",
+    "ForbesLindesay/json-source": "*"
   },
-  "development": {},
   "scripts": [
-    "index.js",
-    "lib/template.js"
+    "index.js"
   ]
 }
