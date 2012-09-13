@@ -68,7 +68,29 @@ Setting the table source at the end is important, since that ensures that all pl
 Row Renderer API
 ----------------
 
+In most cases, you'll probably just want to use [template-render](https://github.com/ForbesLindesay/template-render) for this, but if you want to roll your own, here's how:
 
+```javascript
+function renderer(table) {
+  return function render(record, options, callback) {
+    //render the record then
+    //callback(err, result);
+    //where result is either a DOM element, or an array of DOM elements
+  }
+}
+```
+
+Then you can use it by attaching it to a table with:
+
+```javascript
+table.renderer(renderer);
+```
+
+The options you get passed are:
+
+ - **id** - The id returned by calling `dataSource.getID(record)` useful to attach info for editing records
+ - **index** - The index of this record in the array of all currently displayed records, useful for lots of reasons (you could repeat the header row every so often for example)
+ - **records** - An array containing all the records, useful if you need to work out what neighbouring records look like
 
 Data Source API
 ---------------
