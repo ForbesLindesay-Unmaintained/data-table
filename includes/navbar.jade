@@ -1,0 +1,18 @@
+mixin item(url)
+  li(class=active == url ? 'active' : '')
+    a(href=url)
+      block
+
+.navbar.navbar-inverse.navbar-fixed-top
+  .navbar-inner
+    .container
+      a.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
+        span.icon-bar
+        span.icon-bar
+        span.icon-bar
+
+      a.brand(href='/') Data Table
+
+      .nav-collapse
+        ul.nav
+          +item('/') Home

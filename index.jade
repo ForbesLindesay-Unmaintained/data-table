@@ -1,0 +1,44 @@
+!!! 5
+html(lang='en')
+  head
+    title Data-Table - The JavaScript data table component
+    include includes/head
+  body(data-spy='scroll', data-target='#scroll-nav', data-offset='10')
+    active = '/'
+    include includes/navbar
+    .container-fluid
+      .hero-unit
+        h1 Data Table
+        p The JavaScript Data Table component that's modular and doesn't rely on jQuery
+      .navbar.subnav
+        .navbar-inner
+          ul#scroll-nav.nav
+            mixin subItem(id)
+              li
+                a(href='#' + id)
+                  block
+            +subItem('examples') Examples
+            +subItem('license') License
+
+      #examples
+        h1 Examples
+      #license
+        h1 License
+
+  script
+    $(document).scroll(function(){
+      // If has not activated (has no attribute "data-top"
+      if (!$('.subnav').attr('data-top')) {
+        // If already fixed, then do nothing
+        if ($('.subnav').hasClass('navbar-fixed-top')) return;
+        // Remember top position
+        var offset = $('.subnav').offset()
+        $('.subnav').attr('data-top', offset.top);
+      }
+
+      if ($('.subnav').attr('data-top') - $('.subnav').outerHeight() <= $(this).scrollTop())
+        $('.subnav').addClass('navbar-fixed-top');
+      else
+        $('.subnav').removeClass('navbar-fixed-top');
+    });
+    $('#scroll-nav').scrollspy({offset: 20});

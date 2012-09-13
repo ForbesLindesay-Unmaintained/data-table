@@ -1,0 +1,32 @@
+link(rel='stylesheet', href='build/build.css')
+link(rel='stylesheet', href='bootstrap/less/bootstrap.css')
+link(rel='stylesheet', href='bootstrap/less/responsive.css')
+meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js')
+script(src='build/build.js')
+script(src='bootstrap/js/bootstrap-scrollspy.js')
+style
+  @media (min-width: 980px) {
+    body {
+      padding-top: 60px;
+      padding-bottom: 40px;
+    }
+
+    .subnav.navbar-fixed-top {
+      position: fixed;
+      top: 40px;
+      left: 0;
+      right: 0;
+      z-index: 1020;
+    }
+    .subnav.navbar-fixed-top .nav {
+      width: 938px;
+      margin: 0 auto;
+    }
+  }
+
+  @media (min-width: 1210px) {
+    .subnav.navbar-fixed-top .nav {
+      width: 1168px;
+    }
+  }

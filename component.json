@@ -1,0 +1,6 @@
+{
+  "name": "data-table-app",
+  "dependencies": {
+    "ForbesLindesay/data-table": "*"
+  }
+}
