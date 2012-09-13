@@ -39,6 +39,8 @@ function table(table) {
 
   function render() {
     if (!dataSource || !rowRenderer) return;
+    dataSource = dataSource(table);
+    rowRenderer = rowRenderer(table);
     for (var i = 0; i < plugins.length; i++) {
       plugins[i](exports, templates, columns, dataSource);
     }
@@ -82,7 +84,7 @@ function table(table) {
     if (nextElementCache[id]) return callback(new Error('The same id can\'t appear twice in the table'));
     trigger('pre-render', [record, id, records, i], function (err) {
       if (err) return callback(err);
-      rowRenderer(record, records, i, id, function (err, result) {
+      rowRenderer(record, {records: records, index: i, id: id}, function (err, result) {
         if (err) return callback(err);
         trigger('post-render', [record, id, records, i, result], function (err) {
           if (err) return callback(err);

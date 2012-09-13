@@ -52,13 +52,17 @@ table.use(require('search'));
 //Define the source
 var jsonSource = require('json-source');
 //jsonSource will automatically load the json in script - "application/json-data"
-var source = jsonSource(table);
+var source = jsonSource();
 source.getID = function (record) {
-  return record.username; //If our id was called id we wouldn't need this
+  return record.username; //If our id was called 'id' we wouldn't need this
 };
 
+//Define renderer
+var templateRenderer = require('template-render');
+var renderer = templateRenderer();
+
 //Use template renderer
-table.renderer(require('template-row'));
+table.renderer(renderer);
 //Use the source
 table.source(source);
 ```
@@ -97,7 +101,9 @@ Data Source API
 
 You probably want to use one of the pre-made plugins for this, but if you want to impliment your own, here's how:
 
-The data source provides the data to render in the table.  It must supply a set of rows, and a selector for the id.
+The data source provides the data to render in the table.  It **must** supply a set of rows, and a selector for the id.  It **may** supply a count method to retrieve the number of rows, and an update method to update the data source when rows change.
+
+If the dataSource is a function, it will be called with the table as an argument and should return an object matching the following API, otherwise it must directly impliment the following API.
 
 ### DataSource#getID(record)
 
