@@ -39,8 +39,8 @@ function table(table) {
 
   function render() {
     if (!dataSource || !rowRenderer) return;
-    if (typeof dataSource === 'function') dataSource = dataSource(table);
-    rowRenderer = rowRenderer(table);
+    if (typeof dataSource === 'function') dataSource = dataSource(exports);
+    rowRenderer = rowRenderer(exports);
     for (var i = 0; i < plugins.length; i++) {
       plugins[i](exports, templates, columns, dataSource);
     }

@@ -48,7 +48,7 @@
               }
               table.source(source);
 
-              var render = drenderer(table);
+              var render = drenderer();
               table.renderer(render);
               setTimeout(function () {
                 var rows = document.getElementById('users').getElementsByTagName('tbody')[0]
@@ -70,9 +70,8 @@
           var renderer = require('ForbesLindesay-template-render');
           describe('rendering a template that was set in JavaScript', function () {
             it('renders', function (done) {
-              var jsrenderer = renderer();
-              jsrenderer.setTemplate('  \n<tr><td>{{foo}}</td><td>{{{bar}}}</td></tr>\n  ');
-              jsrenderer({foo: '<br />', bar: '<br />'}, null, null, null, function (err, res) {
+              var jsrenderer = renderer('  \n<tr><td>{{foo}}</td><td>{{{bar}}}</td></tr>\n  ')({});
+              jsrenderer({foo: '<br />', bar: '<br />'}, {}, function (err, res) {
                 if (err) throw err;
                 expect(res).to.be.ok();
                 expect(res.outerHTML).to.equal('<tr><td>&lt;br /&gt;</td><td><br></td></tr>');
@@ -83,7 +82,7 @@
           describe('rendering a template set in the html', function () {
             it('renders', function (done) {
               var htmlrenderer = renderer({templates: {rowTemplate: '\n  <tr><td>{{foo}}</td><td>{{{bar}}}</td></tr>\n  '}});
-              htmlrenderer({foo: '<br />', bar: '<br />'}, null, null, null, function (err, res) {
+              htmlrenderer({foo: '<br />', bar: '<br />'}, {}, function (err, res) {
                 if (err) throw err;
                 expect(res).to.be.ok();
                 expect(res.outerHTML).to.equal('<tr><td>&lt;br /&gt;</td><td><br></td></tr>');
